@@ -46,11 +46,25 @@ function App() {
     <div className="container">
       <header className="intro">
         <h1>25 YEARS OF CAMWAL</h1>
+
+        {/* 🎥 Placeholder video container */}
+        <div className="intro-video">
+          <p className="video-caption">📽️ Cameo from James Buckley loading soon...
+          </p>
+          <div className="video-placeholder">
+            <p style={{ margin: 0, color: "#888" }}>
+              [ VIDEO PLAYER WILL GO HERE ]
+            </p>
+          </div>
+        </div>
+
         <p className="subtext">
-          The silver-tongued snobby gangster has been terrorising the UK since conception.
+          The silver-tongued snobby gangster has been terrorising the UK since
+          conception.
         </p>
         <p>Here are some of your highlights.</p>
         <p>Enjoy.</p>
+
         <div style={{ marginTop: "1rem" }}>
           <button onClick={() => setDarkMode(!darkMode)}>
             {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
@@ -151,7 +165,9 @@ function Post({ post }) {
           <source src={post.url} type="video/mp4" />
         </video>
       )}
-      <p className="caption"><strong>{post.caption}</strong></p>
+      <p className="caption">
+        <strong>{post.caption}</strong>
+      </p>
       <p className="year">Year {post.year}</p>
 
       <form className="comment-form" onSubmit={submitComment}>
@@ -166,7 +182,9 @@ function Post({ post }) {
 
       <div className="comments">
         {comments.map((c, i) => (
-          <div key={i} className="comment">💬 {c.text}</div>
+          <div key={i} className="comment">
+            💬 {c.text}
+          </div>
         ))}
       </div>
     </div>

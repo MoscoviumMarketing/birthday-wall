@@ -42,6 +42,31 @@ body.dark {
   margin-bottom: 1rem;
 }
 
+.intro-video {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.video-caption {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+
+.video-placeholder {
+  width: 100%;
+  height: 200px;
+  background: #ddd;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #444;
+  font-size: 1rem;
+  border: 2px dashed #ccc;
+}
+
 .filter {
   text-align: center;
   margin: 2rem 0;
@@ -118,6 +143,10 @@ body.dark {
   margin-top: 0.5rem;
   font-size: 0.95rem;
   color: var(--text);
+}
+
+.comment {
+  padding: 4px 0;
 }
 
 .upload {
