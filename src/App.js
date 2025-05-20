@@ -92,21 +92,29 @@ function Post({ post }) {
       .then(data => setComments(data));
   }, [post._id]);
 
-  const submitComment = async (e) => {
-    e.preventDefault();
-    if (!commentInput) return;
+const submitComment = async (e) => {
+  e.preventDefault();
+  if (!commentInput.trim()) return;
 
-    await fetch(`https://birthday-wall-backend.onrender.com/comments`, {
+  try {
+    const res = await fetch(`https://birthday-wall-backend.onrender.com/comments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ postId: post._id, text: commentInput }),
     });
 
+    if (!res.ok) throw new Error("Failed to submit comment");
+
     setCommentInput("");
-    const res = await fetch(`https://birthday-wall-backend.onrender.com/comments/${post._id}`);
-    const data = await res.json();
+
+    const updated = await fetch(`https://birthday-wall-backend.onrender.com/comments/${post._id}`);
+    const data = await updated.json();
     setComments(data);
-  };
+  } catch (err) {
+    console.error("❌ Comment error:", err);
+    alert("Something went wrong posting your comment.");
+  }
+};
 
   return (
     <div style={{ border: "1px solid #ccc", padding: 10, marginBottom: 20 }}>
