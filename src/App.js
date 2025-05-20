@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import "./App.css";
 
 const BACKEND_URL = "https://birthday-wall-backend.onrender.com";
 
@@ -8,12 +10,17 @@ function App() {
   const [year, setYear] = useState("1");
   const [posts, setPosts] = useState([]);
   const [selectedYear, setSelectedYear] = useState("All");
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/posts`)
-      .then(res => res.json())
-      .then(data => setPosts(data));
+      .then((res) => res.json())
+      .then((data) => setPosts(data));
   }, []);
+
+  useEffect(() => {
+    document.body.className = darkMode ? "dark" : "";
+  }, [darkMode]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,33 +43,28 @@ function App() {
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "600px", margin: "auto" }}>
-      <h1>🎉 Happy Birthday Wall 🎂</h1>
+    <div className="container">
+      <header className="intro">
+        <h1>25 YEARS OF CAMWAL</h1>
+        <p className="subtext">
+          The silver-tongued snobby gangster has been terrorising the UK since conception.
+        </p>
+        <p>Here are some of your highlights.</p>
+        <p>Enjoy.</p>
+        <div style={{ marginTop: "1rem" }}>
+          <button onClick={() => setDarkMode(!darkMode)}>
+            {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+          </button>
+        </div>
+      </header>
 
-      {/* Upload Form */}
-      <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
-        <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-        <input
-          type="text"
-          placeholder="Write a message..."
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
-          style={{ width: "100%", margin: "10px 0" }}
-        />
-        <select value={year} onChange={(e) => setYear(e.target.value)}>
-          {[...Array(25)].map((_, i) => (
-            <option key={i + 1} value={String(i + 1)}>
-              Year {i + 1}
-            </option>
-          ))}
-        </select>
-        <button type="submit">Post</button>
-      </form>
-
-      {/* Filter Dropdown */}
-      <div style={{ marginBottom: "20px" }}>
-        <strong>Filter by Year:</strong>{" "}
-        <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
+      <div className="filter">
+        <label htmlFor="yearSelect">Select a Year:</label>
+        <select
+          id="yearSelect"
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(e.target.value)}
+        >
           <option value="All">All Years</option>
           {[...Array(25)].map((_, i) => (
             <option key={i + 1} value={String(i + 1)}>
@@ -72,12 +74,44 @@ function App() {
         </select>
       </div>
 
-      {/* Posts */}
-      {posts
-        .filter((post) => selectedYear === "All" || post.year === selectedYear)
-        .map((post) => (
-          <Post key={post._id} post={post} />
-        ))}
+      <section className="posts">
+        <AnimatePresence>
+          {posts
+            .filter((post) => selectedYear === "All" || post.year === selectedYear)
+            .map((post) => (
+              <motion.div
+                key={post._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Post post={post} />
+              </motion.div>
+            ))}
+        </AnimatePresence>
+      </section>
+
+      <section className="upload">
+        <h2>Add Your Own Moment</h2>
+        <form onSubmit={handleSubmit}>
+          <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+          <input
+            type="text"
+            placeholder="Write a message..."
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+          />
+          <select value={year} onChange={(e) => setYear(e.target.value)}>
+            {[...Array(25)].map((_, i) => (
+              <option key={i + 1} value={String(i + 1)}>
+                Year {i + 1}
+              </option>
+            ))}
+          </select>
+          <button type="submit">Post</button>
+        </form>
+      </section>
     </div>
   );
 }
@@ -88,63 +122,51 @@ function Post({ post }) {
 
   useEffect(() => {
     fetch(`https://birthday-wall-backend.onrender.com/comments/${post._id}`)
-      .then(res => res.json())
-      .then(data => setComments(data));
+      .then((res) => res.json())
+      .then((data) => setComments(data));
   }, [post._id]);
 
-const submitComment = async (e) => {
-  e.preventDefault();
-  if (!commentInput.trim()) return;
+  const submitComment = async (e) => {
+    e.preventDefault();
+    if (!commentInput.trim()) return;
 
-  try {
-    const res = await fetch(`https://birthday-wall-backend.onrender.com/comments`, {
+    await fetch(`https://birthday-wall-backend.onrender.com/comments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ postId: post._id, text: commentInput }),
     });
 
-    if (!res.ok) throw new Error("Failed to submit comment");
-
     setCommentInput("");
-
-    const updated = await fetch(`https://birthday-wall-backend.onrender.com/comments/${post._id}`);
-    const data = await updated.json();
+    const res = await fetch(`https://birthday-wall-backend.onrender.com/comments/${post._id}`);
+    const data = await res.json();
     setComments(data);
-  } catch (err) {
-    console.error("❌ Comment error:", err);
-    alert("Something went wrong posting your comment.");
-  }
-};
+  };
 
   return (
-    <div style={{ border: "1px solid #ccc", padding: 10, marginBottom: 20 }}>
+    <div className="post-card">
       {post.type === "image" ? (
-        <img src={post.url} alt={post.caption} style={{ maxWidth: "100%" }} />
+        <img src={post.url} alt={post.caption} />
       ) : (
-        <video controls style={{ maxWidth: "100%" }}>
+        <video controls>
           <source src={post.url} type="video/mp4" />
         </video>
       )}
-      <p><strong>{post.caption}</strong></p>
-      <p><em>Year {post.year}</em></p>
+      <p className="caption"><strong>{post.caption}</strong></p>
+      <p className="year">Year {post.year}</p>
 
-      {/* Comments Section */}
-      <div style={{ marginTop: 10 }}>
-        <form onSubmit={submitComment}>
-          <input
-            type="text"
-            value={commentInput}
-            placeholder="Add a comment..."
-            onChange={(e) => setCommentInput(e.target.value)}
-            style={{ width: "80%" }}
-          />
-          <button type="submit">Post</button>
-        </form>
+      <form className="comment-form" onSubmit={submitComment}>
+        <input
+          type="text"
+          placeholder="Add a comment..."
+          value={commentInput}
+          onChange={(e) => setCommentInput(e.target.value)}
+        />
+        <button type="submit">Comment</button>
+      </form>
 
+      <div className="comments">
         {comments.map((c, i) => (
-          <div key={i} style={{ fontSize: "0.9em", paddingTop: 5 }}>
-            💬 {c.text}
-          </div>
+          <div key={i} className="comment">💬 {c.text}</div>
         ))}
       </div>
     </div>
