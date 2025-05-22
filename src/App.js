@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import Confetti from "react-confetti";
+import { useWindowSize } from "@react-hook/window-size";
 import "./App.css";
 
 const BACKEND_URL = "https://birthday-wall-backend.onrender.com";
@@ -9,13 +11,18 @@ function App() {
   const [caption, setCaption] = useState("");
   const [year, setYear] = useState("1");
   const [posts, setPosts] = useState([]);
-  const [selectedYear, setSelectedYear] = useState("All");
   const [darkMode, setDarkMode] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [width, height] = useWindowSize();
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/posts`)
       .then((res) => res.json())
-      .then((data) => setPosts(data));
+      .then((data) => {
+        const sorted = data.sort((a, b) => a.year - b.year);
+        setPosts(sorted);
+      });
   }, []);
 
   useEffect(() => {
@@ -37,33 +44,65 @@ function App() {
     });
 
     const newPost = await res.json();
-    setPosts([newPost, ...posts]);
+    setPosts((prev) => [...prev, newPost].sort((a, b) => a.year - b.year));
     setCaption("");
     setFile(null);
   };
 
+  const revealVideo = () => {
+    setShowVideo(true);
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 5000);
+  };
+
   return (
     <div className="container">
+      {showConfetti && (
+        <Confetti
+          width={width}
+          height={height}
+          numberOfPieces={300}
+          recycle={false}
+        />
+      )}
+
       <header className="intro">
         <h1>25 YEARS OF CAMWAL</h1>
 
-        {/* 🎥 Placeholder video container */}
         <div className="intro-video">
-          <p className="video-caption">📽️ Cameo from James Buckley loading soon...
-          </p>
-          <div className="video-placeholder">
-            <p style={{ margin: 0, color: "#888" }}>
-              [ VIDEO PLAYER WILL GO HERE ]
-            </p>
-          </div>
+          {!showVideo ? (
+            <button
+              onClick={revealVideo}
+              className="press-button"
+            >
+              🎁 PRESS ME
+            </button>
+          ) : (
+            <>
+              <p className="video-caption">📽️ Cameo from James Buckley</p>
+              <video
+                controls
+                autoPlay
+                style={{
+                  maxWidth: "100%",
+                  borderRadius: "12px",
+                  margin: "1rem 0",
+                }}
+              >
+                <source
+                  src="https://res.cloudinary.com/dcq80vvq9/video/upload/v1747924051/camwal-intro.mp4_nscm3j.mp4"
+                  type="video/mp4"
+                />
+              </video>
+            </>
+          )}
         </div>
 
         <p className="subtext">
-          The silver-tongued snobby gangster has been terrorising the UK since
-          conception.
+          THE SILVER-TONGUED SNOBBY GANGSTER HAS BEEN TERRORISING THE UK SINCE CONCEPTION.
         </p>
-        <p>Here are some of your highlights.</p>
-        <p>Enjoy.</p>
+        <p>HERE ARE SOME OF YOUR HIGHLIGHTS.</p>
+        <p>ENJOY.</p>
 
         <div style={{ marginTop: "1rem" }}>
           <button onClick={() => setDarkMode(!darkMode)}>
@@ -72,38 +111,18 @@ function App() {
         </div>
       </header>
 
-      <div className="filter">
-        <label htmlFor="yearSelect">Select a Year:</label>
-        <select
-          id="yearSelect"
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(e.target.value)}
-        >
-          <option value="All">All Years</option>
-          {[...Array(25)].map((_, i) => (
-            <option key={i + 1} value={String(i + 1)}>
-              Year {i + 1}
-            </option>
-          ))}
-        </select>
-      </div>
-
       <section className="posts">
-        <AnimatePresence>
-          {posts
-            .filter((post) => selectedYear === "All" || post.year === selectedYear)
-            .map((post) => (
-              <motion.div
-                key={post._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Post post={post} />
-              </motion.div>
-            ))}
-        </AnimatePresence>
+        {posts.map((post) => (
+          <motion.div
+            key={post._id}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <Post post={post} />
+          </motion.div>
+        ))}
       </section>
 
       <section className="upload">
@@ -165,10 +184,7 @@ function Post({ post }) {
           <source src={post.url} type="video/mp4" />
         </video>
       )}
-      <p className="caption">
-        <strong>{post.caption}</strong>
-      </p>
-      <p className="year">Year {post.year}</p>
+      <p className="caption"><strong>{post.caption}</strong></p>
 
       <form className="comment-form" onSubmit={submitComment}>
         <input
