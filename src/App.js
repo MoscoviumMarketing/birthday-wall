@@ -79,7 +79,7 @@ function App() {
             </button>
           ) : (
             <>
-              <p className="video-caption">📽️ Cameo from James Buckley</p>
+              <p className="video-caption">📽️</p>
               <video
                 controls
                 autoPlay
