@@ -20,7 +20,7 @@ function App() {
     fetch(`${BACKEND_URL}/posts`)
       .then((res) => res.json())
       .then((data) => {
-        const sorted = data.sort((a, b) => a.year - b.year);
+        const sorted = data.sort((a, b) => Number(b.year) - Number(a.year)); // Reversed order
         setPosts(sorted);
       });
   }, []);
@@ -44,7 +44,9 @@ function App() {
     });
 
     const newPost = await res.json();
-    setPosts((prev) => [...prev, newPost].sort((a, b) => a.year - b.year));
+    setPosts((prev) =>
+      [...prev, newPost].sort((a, b) => Number(b.year) - Number(a.year))
+    );
     setCaption("");
     setFile(null);
   };
@@ -58,12 +60,7 @@ function App() {
   return (
     <div className="container">
       {showConfetti && (
-        <Confetti
-          width={width}
-          height={height}
-          numberOfPieces={300}
-          recycle={false}
-        />
+        <Confetti width={width} height={height} numberOfPieces={300} recycle={false} />
       )}
 
       <header className="intro">
@@ -71,10 +68,7 @@ function App() {
 
         <div className="intro-video">
           {!showVideo ? (
-            <button
-              onClick={revealVideo}
-              className="press-button"
-            >
+            <button onClick={revealVideo} className="press-button">
               🎁 PRESS ME
             </button>
           ) : (
@@ -83,11 +77,7 @@ function App() {
               <video
                 controls
                 autoPlay
-                style={{
-                  maxWidth: "100%",
-                  borderRadius: "12px",
-                  margin: "1rem 0",
-                }}
+                style={{ maxWidth: "100%", borderRadius: "12px", margin: "1rem 0" }}
               >
                 <source
                   src="https://res.cloudinary.com/dcq80vvq9/video/upload/v1747924051/camwal-intro.mp4_nscm3j.mp4"
