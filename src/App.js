@@ -14,14 +14,20 @@ function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [width, height] = useWindowSize();
 
   useEffect(() => {
     fetch(`${BACKEND_URL}/posts`)
       .then((res) => res.json())
       .then((data) => {
-        const sorted = data.sort((a, b) => Number(b.year) - Number(a.year)); // Reversed order
+        const sorted = data.sort((a, b) => Number(b.year) - Number(a.year));
         setPosts(sorted);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch posts:", err);
+        setLoading(false);
       });
   }, []);
 
@@ -101,19 +107,25 @@ function App() {
         </div>
       </header>
 
-      <section className="posts">
-        {posts.map((post) => (
-          <motion.div
-            key={post._id}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <Post post={post} />
-          </motion.div>
-        ))}
-      </section>
+      {loading ? (
+        <p style={{ textAlign: "center", fontSize: "1.2rem", marginTop: "2rem" }}>
+          🌀 Loading highlights...
+        </p>
+      ) : (
+        <section className="posts">
+          {posts.map((post) => (
+            <motion.div
+              key={post._id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <Post post={post} />
+            </motion.div>
+          ))}
+        </section>
+      )}
 
       <section className="upload">
         <h2>Add Your Own Moment</h2>
